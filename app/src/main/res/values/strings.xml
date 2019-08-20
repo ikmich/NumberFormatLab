@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">NumberFormatLab</string>
+    <string name="show_output">Show output</string>
+</resources>
