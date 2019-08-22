@@ -1,4 +1,4 @@
-package com.ikmich.cif;
+package com.ikmich.localeaware;
 
 import org.junit.Test;
 

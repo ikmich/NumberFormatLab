@@ -2,14 +2,12 @@ package com.example.numberformatlab;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-
-import com.ikmich.cif.CurrencyInputFormatter;
+import com.ikmich.localeaware.LocaleAwareCurrencyInput;
 
 import java.util.Locale;
 
@@ -18,7 +16,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvOutput;
     private EditText etInput;
 
-    CurrencyInputFormatter currencyInputFormatter;
+    LocaleAwareCurrencyInput.Builder builder;
+    LocaleAwareCurrencyInput localeAwareCurrencyInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
         tvLocale.setText(String.format("%s, %s",
                 locale.getCountry(), locale.getLanguage()));
 
-
         Button btnShowOutput = findViewById(R.id.btn_show_output);
         btnShowOutput.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,21 +41,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        CurrencyInputFormatter.Builder builder = new CurrencyInputFormatter.Builder()
-                /*.dontFormat()*/
-                /*.showCurrency(true)*/;
-        currencyInputFormatter = builder.buildFor(etInput);
-        currencyInputFormatter.setup();
+        builder = new LocaleAwareCurrencyInput.Builder()
+                .formatInput(true);
+        // .showCurrency(false);
+        localeAwareCurrencyInput = builder.buildFor(etInput);
+        localeAwareCurrencyInput.setup(savedInstanceState != null);
     }
 
-
     private void showOutput(String input) {
-        if (TextUtils.isEmpty(input)) {
-            tvOutput.setText("");
-            return;
-        }
+        // if (TextUtils.isEmpty(input)) {
+        //     tvOutput.setText("");
+        //     return;
+        // }
 
-        // tvOutput.setText(formatCurrencyInput(input));
-        // tvOutput.setText(currencyInputFormatter.getFormattedValue());
+        // tvOutput.setText(etInput.getText());
     }
 }

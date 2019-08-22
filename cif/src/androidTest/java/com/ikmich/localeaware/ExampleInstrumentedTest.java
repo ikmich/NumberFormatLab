@@ -1,4 +1,4 @@
-package com.ikmich.cif;
+package com.ikmich.localeaware;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
