@@ -7,8 +7,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.ikmich.localeaware.LocaleAwareCurrencyInput;
+import com.ikmich.localeaware.NumberInput;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -16,8 +18,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvOutput;
     private EditText etInput;
 
-    LocaleAwareCurrencyInput.Builder builder;
-    LocaleAwareCurrencyInput localeAwareCurrencyInput;
+    NumberInput.Builder builder;
+    NumberInput numberInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,11 +43,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        builder = new LocaleAwareCurrencyInput.Builder()
-                .formatInput(true);
-        // .showCurrency(false);
-        localeAwareCurrencyInput = builder.buildFor(etInput);
-        localeAwareCurrencyInput.setup(savedInstanceState != null);
+        builder = new NumberInput.Builder()
+                .formatInput(true)
+                .showCurrency(true);
+        numberInput = builder.buildFor(etInput);
+        numberInput.setup(savedInstanceState != null);
     }
 
     private void showOutput(String input) {
@@ -53,7 +55,5 @@ public class MainActivity extends AppCompatActivity {
         //     tvOutput.setText("");
         //     return;
         // }
-
-        // tvOutput.setText(etInput.getText());
     }
 }
