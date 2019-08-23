@@ -9,8 +9,6 @@ import android.widget.TextView;
 
 import com.ikmich.localeaware.NumberInput;
 
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
