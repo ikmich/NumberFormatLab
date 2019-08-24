@@ -18,6 +18,16 @@
         android:textSize="18sp" />
 
     <EditText
+        android:id="@+id/et_input_general"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/dosis_medium"
+        android:gravity="center_horizontal"
+        android:inputType="numberDecimal"
+        android:textSize="32sp"
+        android:visibility="gone" />
+
+    <EditText
         android:id="@+id/et_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -45,7 +55,7 @@
         android:fontFamily="@font/dosis_regular"
         android:gravity="center_horizontal"
         android:textColor="#464646"
-        android:textSize="28sp"
+        android:textSize="18sp"
         android:textStyle="bold" />
 
 </LinearLayout>

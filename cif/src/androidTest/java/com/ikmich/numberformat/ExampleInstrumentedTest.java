@@ -1,4 +1,4 @@
-package com.ikmich.localeaware;
+package com.ikmich.numberformat;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

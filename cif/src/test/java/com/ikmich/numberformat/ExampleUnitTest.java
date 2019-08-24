@@ -1,4 +1,4 @@
-package com.ikmich.localeaware;
+package com.ikmich.numberformat;
 
 import org.junit.Test;
 

@@ -1,36 +1,34 @@
-package com.ikmich.localeaware;
+package com.ikmich.numberformat;
 
 import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.widget.EditText;
-import android.widget.Toast;
 
-import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-public class NumberInputTextWatcher implements TextWatcher {
+public class NumberFormatterTextWatcher implements TextWatcher {
     private boolean hasDecimalSeparator;
     private int startLen = 0;
     private static final String DIGITS = "-0123456789";
 
-    private EditText mEditText;
-    private Locale mLocale;
-    private String mCurrencyString = "";
+    private EditText editText;
+    private Locale locale;
+    private String currencyString = "";
     private boolean shouldFormatText = true;
-    private String unformattedValue = "";
     private char prevChar;
     private int numFractionDigits;
 
-    public NumberInputTextWatcher(EditText editText, @NonNull Locale locale) {
-        mEditText = editText;
-        mLocale = locale;
+    private InputListener inputListener;
+
+    public NumberFormatterTextWatcher(EditText editText, @NonNull Locale locale) {
+        this.editText = editText;
+        this.locale = locale;
     }
 
     public void shouldFormatText(boolean b) {
@@ -43,18 +41,18 @@ public class NumberInputTextWatcher implements TextWatcher {
      * @param currencyString
      */
     public void setCurrencyString(String currencyString) {
-        mCurrencyString = currencyString == null ? "" : currencyString.trim();
+        this.currencyString = currencyString == null ? "" : currencyString.trim();
     }
 
     // @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
-    private String filter(String input) {
+    private String filterInput(String input) {
         if (input == null) {
             input = "";
         }
 
         // Remove currency string
-        String quote = Pattern.quote(String.format("%s", mCurrencyString));
-        input = input.replaceAll(quote, "");
+        input = input.replaceAll(Pattern.quote(
+                String.format("%s", currencyString)), "");
 
         // Remove negative sign not at the start of number
         input = input.replaceAll("(?<=.)-+", "");
@@ -72,7 +70,7 @@ public class NumberInputTextWatcher implements TextWatcher {
                 .matcher(input).find();
 
         if (b1 || b2) {
-            return mCurrencyString + input;
+            return currencyString + input;
         }
 
         // Remove disallowed items
@@ -83,22 +81,32 @@ public class NumberInputTextWatcher implements TextWatcher {
             }
         }
         input = sb.toString();
-        unformattedValue = input;
+        String unformattedValue = stripGroupingChar(input);
 
-        if (shouldFormatText) {
-            numFractionDigits = getNumCharsAfterDecimal(input);
-            input = format(input);
+        numFractionDigits = getNumCharsAfterDecimal(input);
+        String formattedValue = format(input);
+
+        if (inputListener != null) {
+            inputListener.onChange(unformattedValue, formattedValue);
         }
 
-        return mCurrencyString + input;
+        if (shouldFormatText) {
+            input = formattedValue;
+        }
+
+        return currencyString + input;
+    }
+
+    private String stripGroupingChar(String input) {
+        return input.replaceAll(
+                Pattern.quote(String.format("%s", getGroupingChar())), "");
     }
 
     private String format(String input) {
         try {
-            input = input.replaceAll(
-                    Pattern.quote(String.format("%s", getGroupingChar())), "");
+            input = stripGroupingChar(input);
 
-            NumberFormat nf = NumberFormat.getInstance(mLocale);
+            NumberFormat nf = NumberFormat.getInstance(locale);
             nf.setMaximumFractionDigits(numFractionDigits);
             Number number = nf.parse(input);
             input = nf.format(number);
@@ -170,12 +178,10 @@ public class NumberInputTextWatcher implements TextWatcher {
             }
         }
 
-        String filtered = filter(value);
+        String filtered = filterInput(value);
 
-        mEditText.removeTextChangedListener(this);
-        mEditText.setText(filtered);
-
-        Log.d("dibug", "start: " + start);
+        editText.removeTextChangedListener(this);
+        editText.setText(filtered);
 
         int diff = filtered.length() - value.length();
         int cursorPos = start + diff;
@@ -185,15 +191,14 @@ public class NumberInputTextWatcher implements TextWatcher {
         if (cursorPos < 0)
             cursorPos = 0;
 
+        editText.setSelection(cursorPos);
 
-        mEditText.setSelection(cursorPos);
-
-        if (mEditText.getSelectionEnd() == 0 && hasCurrencyString()) {
-            cursorPos = mEditText.getSelectionEnd() + mCurrencyString.length();
-            mEditText.setSelection(cursorPos);
+        if (editText.getSelectionEnd() == 0 && hasCurrencyString()) {
+            cursorPos = editText.getSelectionEnd() + currencyString.length();
+            editText.setSelection(cursorPos);
         }
 
-        mEditText.addTextChangedListener(this);
+        editText.addTextChangedListener(this);
     }
 
     @Override
@@ -205,23 +210,27 @@ public class NumberInputTextWatcher implements TextWatcher {
         return sb.deleteCharAt(index).toString();
     }
 
-    public String getUnformattedValue() {
-        return unformattedValue;
-    }
-
     private boolean hasCurrencyString() {
-        return !TextUtils.isEmpty(mCurrencyString);
+        return !TextUtils.isEmpty(currencyString);
     }
 
     public String getAcceptedInputs() {
-        return NumberInputTextWatcher.DIGITS + getDecimalChar() + getGroupingChar();
+        return NumberFormatterTextWatcher.DIGITS + getDecimalChar() + getGroupingChar();
     }
 
     public char getDecimalChar() {
-        return DecimalFormatSymbols.getInstance(mLocale).getDecimalSeparator();
+        return DecimalFormatSymbols.getInstance(locale).getDecimalSeparator();
     }
 
     public char getGroupingChar() {
-        return DecimalFormatSymbols.getInstance(mLocale).getGroupingSeparator();
+        return DecimalFormatSymbols.getInstance(locale).getGroupingSeparator();
+    }
+
+    public void setInputListener(@NonNull InputListener inputListener) {
+        this.inputListener = inputListener;
+    }
+
+    public interface InputListener {
+        void onChange(String unformattedValue, String formattedValue);
     }
 }
