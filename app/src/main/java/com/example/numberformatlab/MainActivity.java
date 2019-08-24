@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvOutput;
     private EditText etInput;
 
-    NumberInput.Builder builder;
+    NumberInput.Builder numberInputBuilder;
     NumberInput numberInput;
 
     @Override
@@ -41,10 +41,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        builder = new NumberInput.Builder()
+        numberInputBuilder = new NumberInput.Builder()
                 .formatInput(true)
                 .showCurrency(true);
-        numberInput = builder.buildFor(etInput);
+        numberInput = numberInputBuilder.buildFor(etInput);
         numberInput.setup(savedInstanceState != null);
     }
 

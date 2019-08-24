@@ -4,26 +4,24 @@ import android.support.annotation.NonNull;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.method.DigitsKeyListener;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
-import java.text.DecimalFormatSymbols;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class NumberInput {
 
-    private EditText et;
+    private EditText mEditText;
     private NumberInputTextWatcher textWatcher;
     private Builder mBuilder;
     private Locale mLocale;
 
     private NumberInput(EditText editText, @NonNull Locale locale) {
-        et = editText;
+        mEditText = editText;
         mLocale = locale;
-        textWatcher = new NumberInputTextWatcher(et, locale);
+        textWatcher = new NumberInputTextWatcher(mEditText, locale);
     }
 
     /**
@@ -34,39 +32,36 @@ public class NumberInput {
      *                   savedInstanceState != null
      */
     public void setup(final boolean clearField) {
-        char groupingSeparator = DecimalFormatSymbols.getInstance(mLocale).getGroupingSeparator();
-        Log.d("dibug", String.format("grouping separator: '%s'", groupingSeparator));
-
-        et.post(new Runnable() {
+        mEditText.post(new Runnable() {
             @Override
             public void run() {
                 if (clearField) {
-                    et.setText(null);
+                    mEditText.setText(null);
                 }
 
-                String contents = et.getText().toString();
-                et.setText(String.format("%s%s", getCurrencyString(), contents));
-                et.setInputType(
+                String contents = mEditText.getText().toString();
+                mEditText.setText(String.format("%s%s", getCurrencyString(), contents));
+                mEditText.setInputType(
                         InputType.TYPE_CLASS_NUMBER
                                 | InputType.TYPE_NUMBER_FLAG_DECIMAL
                                 | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-                et.setKeyListener(DigitsKeyListener.getInstance(textWatcher.getAcceptedInputs()));
+                mEditText.setKeyListener(DigitsKeyListener.getInstance(textWatcher.getAcceptedInputs()));
 
                 final Runnable selectionAction = new Runnable() {
                     @Override
                     public void run() {
-                        int sel = et.getSelectionEnd();
+                        int sel = mEditText.getSelectionEnd();
                         boolean hasCurrencySymbol = Pattern.compile(String.format("^%s", getCurrencyString()))
-                                .matcher(et.getText()).find();
+                                .matcher(mEditText.getText()).find();
                         if (hasCurrencySymbol) {
                             if (sel <= getCurrencyString().length()) {
-                                et.setSelection(getCurrencyString().length());
+                                mEditText.setSelection(getCurrencyString().length());
                             }
                         }
                     }
                 };
 
-                et.setOnClickListener(new View.OnClickListener() {
+                mEditText.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         selectionAction.run();
@@ -75,7 +70,7 @@ public class NumberInput {
 
                 selectionAction.run();
 
-                et.addTextChangedListener(textWatcher);
+                mEditText.addTextChangedListener(textWatcher);
             }
         });
     }

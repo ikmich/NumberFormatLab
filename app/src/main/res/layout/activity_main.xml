@@ -14,30 +14,35 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
+        android:fontFamily="@font/dosis_medium"
         android:textSize="18sp" />
 
     <EditText
         android:id="@+id/et_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/dosis_medium"
         android:gravity="center_horizontal"
         android:inputType="numberDecimal"
-        android:textSize="28sp" />
+        android:textSize="32sp" />
 
     <Button
         android:id="@+id/btn_show_output"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/colorPrimary"
+        android:fontFamily="@font/dosis_medium"
         android:gravity="center"
         android:text="@string/show_output"
-        android:textColor="@android:color/white" />
+        android:textColor="@android:color/white"
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/tv_output"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
+        android:fontFamily="@font/dosis_regular"
         android:gravity="center_horizontal"
         android:textColor="#464646"
         android:textSize="28sp"
