@@ -78,7 +78,7 @@ public class NumberInputTextWatcher implements TextWatcher {
         // Remove disallowed items
         StringBuilder sb = new StringBuilder();
         for (char c : input.toCharArray()) {
-            if (/*allowedChars.contains(c) || DIGITS.indexOf(c) > -1*/ getAcceptedInputs().indexOf(c) > -1) {
+            if (getAcceptedInputs().indexOf(c) > -1) {
                 sb.append(c);
             }
         }
@@ -95,7 +95,9 @@ public class NumberInputTextWatcher implements TextWatcher {
 
     private String format(String input) {
         try {
-            input = input.replaceAll(Pattern.quote(String.format("%s", getGroupingChar())), "");
+            input = input.replaceAll(
+                    Pattern.quote(String.format("%s", getGroupingChar())), "");
+
             NumberFormat nf = NumberFormat.getInstance(mLocale);
             nf.setMaximumFractionDigits(numFractionDigits);
             Number number = nf.parse(input);
