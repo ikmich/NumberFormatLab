@@ -12,16 +12,18 @@ import java.text.ParseException;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("JavaDoc")
 public class NumberFormatterTextWatcher implements TextWatcher {
-    private boolean hasDecimalSeparator;
-    private int startLen = 0;
     private static final String DIGITS = "-0123456789";
 
     private EditText editText;
     private Locale locale;
     private String currencyString = "";
     private boolean shouldFormatText = true;
+
+    private int prevLen = 0;
     private char prevChar;
+    private boolean hasDecimalSeparator;
     private int numFractionDigits;
 
     private InputListener inputListener;
@@ -44,7 +46,6 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         this.currencyString = currencyString == null ? "" : currencyString.trim();
     }
 
-    // @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
     private String filterInput(String input) {
         if (input == null) {
             input = "";
@@ -54,7 +55,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         input = input.replaceAll(Pattern.quote(
                 String.format("%s", currencyString)), "");
 
-        // Remove negative sign not at the start of number
+        // Remove negative sign preceded by something else
         input = input.replaceAll("(?<=.)-+", "");
 
         // Reduce multiple trailing decimals to one
@@ -84,7 +85,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         String unformattedValue = stripGroupingChar(input);
 
         numFractionDigits = getNumCharsAfterDecimal(input);
-        String formattedValue = format(input);
+        String formattedValue = format(unformattedValue);
 
         if (inputListener != null) {
             inputListener.onChange(unformattedValue, formattedValue);
@@ -104,8 +105,6 @@ public class NumberFormatterTextWatcher implements TextWatcher {
 
     private String format(String input) {
         try {
-            input = stripGroupingChar(input);
-
             NumberFormat nf = NumberFormat.getInstance(locale);
             nf.setMaximumFractionDigits(numFractionDigits);
             Number number = nf.parse(input);
@@ -138,17 +137,23 @@ public class NumberFormatterTextWatcher implements TextWatcher {
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         hasDecimalSeparator = s.toString().indexOf(getDecimalChar()) > -1;
-        startLen = s.length();
+        prevLen = s.length();
 
-        if (start >= 0 && start < s.length()) {
-            prevChar = s.charAt(start);
+        if (start > 0) {
+            if (prevLen == start) {
+                // typing, not first character.
+                prevChar = s.charAt(start - 1);
+            } else {
+                // deleting
+                prevChar = s.charAt(start);
+            }
         }
     }
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
         String value = s.toString();
-        boolean isDelete = value.length() < startLen;
+        boolean isDelete = value.length() < prevLen;
 
         if (!isDelete && value.length() == 0) {
             return;
@@ -168,9 +173,9 @@ public class NumberFormatterTextWatcher implements TextWatcher {
                 }
             }
         } else {
-            if (prevChar == getGroupingChar()) {
-                // Grouping character deleted. Also delete the number preceding it.
-                if (start > 0) {
+            if (start > 0) {
+                if (prevChar == getGroupingChar()) {
+                    // Grouping character deleted. Also delete the number preceding it.
                     value = removeCharAt(value, start - 1);
                     // Adjust 'start' pointer since an item has been removed
                     start--;

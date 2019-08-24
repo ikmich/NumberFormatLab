@@ -47,9 +47,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        numberInputBuilder = new NumberInputFormatter.Builder()
+        numberInputBuilder = new NumberInputFormatter.Builder();
                 //.formatInput(false)
-                .showCurrency(true, Currency.getInstance(Locale.getDefault()).getCurrencyCode());
+                //.showCurrency(true, Currency.getInstance(Locale.getDefault()).getCurrencyCode());
         numberInputFormatter = numberInputBuilder.buildFor(inputEditText);
         numberInputFormatter.setInputListener(new NumberFormatterTextWatcher.InputListener() {
             @Override
