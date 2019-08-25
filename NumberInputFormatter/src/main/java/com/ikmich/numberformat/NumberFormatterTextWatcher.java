@@ -189,6 +189,8 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         editText.setText(filtered);
 
         int diff = filtered.length() - value.length();
+        if (diff < 0)
+            diff = 0;
         int cursorPos = start + diff;
         if (!isDelete)
             cursorPos++;

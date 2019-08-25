@@ -19,8 +19,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView outputTextView;
     private EditText inputEditText;
 
-    NumberInputFormatter.Builder numberInputBuilder;
-    NumberInputFormatter numberInputFormatter;
+    NumberInputFormatter.Builder formatterBuilder;
+    NumberInputFormatter inputFormatter;
 
     String mFormatted = "";
     String mUnformatted = "";
@@ -47,18 +47,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        numberInputBuilder = new NumberInputFormatter.Builder();
-                //.formatInput(false)
-                //.showCurrency(true, Currency.getInstance(Locale.getDefault()).getCurrencyCode());
-        numberInputFormatter = numberInputBuilder.buildFor(inputEditText);
-        numberInputFormatter.setInputListener(new NumberFormatterTextWatcher.InputListener() {
+        formatterBuilder = new NumberInputFormatter.Builder();
+        // formatterBuilder.formatInput(false);
+        formatterBuilder.showCurrency(true, getCurrencyString());
+
+        inputFormatter = formatterBuilder.buildFor(inputEditText);
+        inputFormatter.setInputListener(new NumberFormatterTextWatcher.InputListener() {
             @Override
             public void onChange(String unformattedValue, String formattedValue) {
                 mUnformatted = unformattedValue;
                 mFormatted = formattedValue;
+                showOutput(inputEditText.getText().toString());
             }
         });
-        numberInputFormatter.setup(savedInstanceState != null);
+
+        inputFormatter.setup(savedInstanceState != null);
+
+    }
+
+    private String getCurrencyString() {
+        return Currency.getInstance(Locale.getDefault()).getCurrencyCode();
     }
 
     private void showOutput(String input) {
@@ -68,10 +76,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Unformatted: ").append(mUnformatted).append("\n")
-                .append("Formatted: ").append(mFormatted);
+        sb.append(String.format("Unformatted: %s\n", mUnformatted))
+                .append(String.format("Formatted: %s\n", mFormatted));
 
         outputTextView.setText(sb);
-
     }
 }
