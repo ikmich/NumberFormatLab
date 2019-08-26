@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String getCurrencyString() {
-        return Currency.getInstance(Locale.getDefault()).getCurrencyCode();
+        return Currency.getInstance(Locale.getDefault()).getSymbol();
     }
 
     private void showOutput(String input) {
