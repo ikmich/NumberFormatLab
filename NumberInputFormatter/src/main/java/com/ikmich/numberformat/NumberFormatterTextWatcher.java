@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.widget.EditText;
 
+import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -104,9 +105,13 @@ public class NumberFormatterTextWatcher implements TextWatcher {
     }
 
     private String format(String input) {
+        if (TextUtils.isEmpty(input))
+            return input;
+
         try {
-            NumberFormat nf = NumberFormat.getInstance(locale);
+            DecimalFormat nf = (DecimalFormat) NumberFormat.getInstance(locale);
             nf.setMaximumFractionDigits(numFractionDigits);
+            nf.setParseBigDecimal(true);
             Number number = nf.parse(input);
             input = nf.format(number);
         } catch (ParseException | ClassCastException e) {
@@ -189,8 +194,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         editText.setText(filtered);
 
         int diff = filtered.length() - value.length();
-        if (diff < 0)
-            diff = 0;
+
         int cursorPos = start + diff;
         if (!isDelete)
             cursorPos++;
@@ -198,12 +202,13 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         if (cursorPos < 0)
             cursorPos = 0;
 
-        editText.setSelection(cursorPos);
-
-        if (editText.getSelectionEnd() == 0 && hasCurrencyString()) {
-            cursorPos = editText.getSelectionEnd() + currencyString.length();
-            editText.setSelection(cursorPos);
+        if (hasCurrencyString()) {
+            if (cursorPos < currencyString.length()) {
+                cursorPos = cursorPos + (currencyString.length() - cursorPos);
+            }
         }
+
+        editText.setSelection(cursorPos);
 
         editText.addTextChangedListener(this);
     }
@@ -213,6 +218,9 @@ public class NumberFormatterTextWatcher implements TextWatcher {
     }
 
     private String removeCharAt(String s, int index) {
+        if (index < 0 || index >= s.length())
+            return s;
+
         StringBuilder sb = new StringBuilder(s);
         return sb.deleteCharAt(index).toString();
     }
