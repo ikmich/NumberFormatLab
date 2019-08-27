@@ -50,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
 
         formatterBuilder = new NumberInputFormatter.Builder();
         // formatterBuilder.formatInput(false);
-        formatterBuilder.showCurrency(true, getCurrencyString());
         formatterBuilder.setMaxDecimalChars(2);
+        formatterBuilder.showCurrency(true, getCurrencyString());
 
         inputFormatter = formatterBuilder.buildFor(inputEditText);
         inputFormatter.setInputListener(new NumberFormatterTextWatcher.InputListener() {
@@ -70,17 +70,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showOutput(String input) {
-        inputEditText.setText("5,900.87");
+        // inputEditText.setText("5,900.87");
 
-        // if (TextUtils.isEmpty(input)) {
-        //     outputTextView.setText("");
-        //     return;
-        // }
-        //
-        // StringBuilder sb = new StringBuilder();
-        // sb.append(String.format("Unformatted: %s\n", mUnformatted))
-        //         .append(String.format("Formatted: %s\n", mFormatted));
-        //
-        // outputTextView.setText(sb);
+        if (TextUtils.isEmpty(input)) {
+            outputTextView.setText("");
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("Unformatted: %s\n", mUnformatted))
+                .append(String.format("Formatted: %s\n", mFormatted));
+
+        outputTextView.setText(sb);
     }
 }
