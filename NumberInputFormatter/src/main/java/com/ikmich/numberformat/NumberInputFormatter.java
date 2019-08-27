@@ -55,7 +55,8 @@ public class NumberInputFormatter {
                     @Override
                     public void run() {
                         int sel = editText.getSelectionEnd();
-                        boolean hasCurrencySymbol = Pattern.compile(String.format("^%s", getCurrencyString()))
+                        // String.format("^%s", getCurrencyString())
+                        boolean hasCurrencySymbol = Pattern.compile("^" + Pattern.quote(getCurrencyString()))
                                 .matcher(editText.getText()).find();
                         if (hasCurrencySymbol) {
                             if (sel <= getCurrencyString().length()) {
@@ -92,8 +93,9 @@ public class NumberInputFormatter {
 
     private void attachBuilder(@NonNull Builder builder) {
         this.builder = builder;
-        textWatcher.shouldFormatText(this.builder.shouldFormatText);
+        textWatcher.shouldFormatText(builder.shouldFormatText);
         textWatcher.setCurrencyString(getCurrencyString());
+        textWatcher.setMaxDecimalChars(builder.maxDecimalChars);
     }
 
     private String getCurrencyString() {
@@ -118,6 +120,7 @@ public class NumberInputFormatter {
         private boolean shouldShowCurrency = false;
         private String mCurrencyString = "";
         private Locale mLocale;
+        private int maxDecimalChars = -1;
 
         public Builder() {
             this(Locale.getDefault());
@@ -139,6 +142,11 @@ public class NumberInputFormatter {
         public Builder showCurrency(boolean b, String currencyString) {
             this.shouldShowCurrency = b;
             this.mCurrencyString = currencyString;
+            return this;
+        }
+
+        public Builder setMaxDecimalChars(int maxDecimalChars) {
+            this.maxDecimalChars = maxDecimalChars;
             return this;
         }
 

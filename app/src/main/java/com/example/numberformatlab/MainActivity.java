@@ -1,6 +1,7 @@
 package com.example.numberformatlab;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         formatterBuilder = new NumberInputFormatter.Builder();
         // formatterBuilder.formatInput(false);
         formatterBuilder.showCurrency(true, getCurrencyString());
+        formatterBuilder.setMaxDecimalChars(2);
 
         inputFormatter = formatterBuilder.buildFor(inputEditText);
         inputFormatter.setInputListener(new NumberFormatterTextWatcher.InputListener() {
@@ -57,12 +59,10 @@ public class MainActivity extends AppCompatActivity {
             public void onChange(String unformattedValue, String formattedValue) {
                 mUnformatted = unformattedValue;
                 mFormatted = formattedValue;
-                showOutput(inputEditText.getText().toString());
             }
         });
 
         inputFormatter.setup(savedInstanceState != null);
-
     }
 
     private String getCurrencyString() {
@@ -70,15 +70,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showOutput(String input) {
-        if (TextUtils.isEmpty(input)) {
-            outputTextView.setText("");
-            return;
-        }
+        inputEditText.setText("5,900.87");
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Unformatted: %s\n", mUnformatted))
-                .append(String.format("Formatted: %s\n", mFormatted));
-
-        outputTextView.setText(sb);
+        // if (TextUtils.isEmpty(input)) {
+        //     outputTextView.setText("");
+        //     return;
+        // }
+        //
+        // StringBuilder sb = new StringBuilder();
+        // sb.append(String.format("Unformatted: %s\n", mUnformatted))
+        //         .append(String.format("Formatted: %s\n", mFormatted));
+        //
+        // outputTextView.setText(sb);
     }
 }

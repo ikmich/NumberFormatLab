@@ -22,10 +22,11 @@ public class NumberFormatterTextWatcher implements TextWatcher {
     private String currencyString = "";
     private boolean shouldFormatText = true;
 
-    private int prevLen = 0;
-    private char prevChar;
+    private int lengthBefore = 0;
+    private char charBefore;
     private boolean hasDecimalSeparator;
     private int numFractionDigits;
+    private int maxDecimalChars = -1;
 
     private InputListener inputListener;
 
@@ -47,21 +48,63 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         this.currencyString = currencyString == null ? "" : currencyString.trim();
     }
 
+    private String resolveDecimals(String s) {
+        char[] chars = s.toCharArray();
+        int decimalIndex = -1;
+
+        for (int i = chars.length - 1; i >= 0; i--) {
+            if (chars[i] == getDecimalChar()) {
+                decimalIndex = i;
+                break;
+            }
+        }
+
+        if (decimalIndex > -1) {
+            // remove other decimals
+            String left = s.substring(0, decimalIndex);
+            String right = s.substring(decimalIndex);
+            left = left.replaceAll("\\.", "");
+            return left + right;
+        }
+
+        return s;
+    }
+
+    private String resolveNegativeSign(String input) {
+        return input.replaceAll("(?<=.)-+", "");
+    }
+
+    private String removeCurrencyString(String input) {
+        return input.replaceAll(Pattern.quote(currencyString), "");
+    }
+
+    private String removeDisallowedChars(String input) {
+        StringBuilder sb = new StringBuilder();
+        for (char c : input.toCharArray()) {
+            if (getAcceptedInputs().indexOf(c) > -1) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
     private String filterInput(String input) {
         if (input == null) {
             input = "";
         }
 
-        // Remove currency string
-        input = input.replaceAll(Pattern.quote(
-                String.format("%s", currencyString)), "");
+        input = removeCurrencyString(input);
+        input = resolveNegativeSign(input);
+        input = removeDisallowedChars(input);
+        input = resolveDecimals(input);
 
-        // Remove negative sign preceded by something else
-        input = input.replaceAll("(?<=.)-+", "");
-
-        // Reduce multiple trailing decimals to one
-        input = input.replaceAll(
-                String.format("\\%s+$", getDecimalChar()), String.valueOf(getDecimalChar()));
+        int decimalIndex = input.indexOf(getDecimalChar());
+        if (decimalIndex > -1) {
+            String characteristic = input.substring(0, decimalIndex);
+            String right = input.substring(decimalIndex);
+            String formattedCharacteristic = format(characteristic);
+            input = formattedCharacteristic + right;
+        }
 
         // Ends in decimal
         boolean b1 = Pattern.compile(String.format("\\%s$", getDecimalChar()))
@@ -75,14 +118,6 @@ public class NumberFormatterTextWatcher implements TextWatcher {
             return currencyString + input;
         }
 
-        // Remove disallowed items
-        StringBuilder sb = new StringBuilder();
-        for (char c : input.toCharArray()) {
-            if (getAcceptedInputs().indexOf(c) > -1) {
-                sb.append(c);
-            }
-        }
-        input = sb.toString();
         String unformattedValue = stripGroupingChar(input);
 
         numFractionDigits = getNumCharsAfterDecimal(input);
@@ -101,7 +136,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
 
     private String stripGroupingChar(String input) {
         return input.replaceAll(
-                Pattern.quote(String.format("%s", getGroupingChar())), "");
+                Pattern.quote(String.valueOf(getGroupingChar())), ""); // Todo - can do without String.format()
     }
 
     private String format(String input) {
@@ -110,7 +145,11 @@ public class NumberFormatterTextWatcher implements TextWatcher {
 
         try {
             DecimalFormat nf = (DecimalFormat) NumberFormat.getInstance(locale);
-            nf.setMaximumFractionDigits(numFractionDigits);
+            if (maxDecimalChars > -1) {
+                nf.setMaximumFractionDigits(maxDecimalChars);
+            } else {
+                nf.setMaximumFractionDigits(numFractionDigits);
+            }
             nf.setParseBigDecimal(true);
             Number number = nf.parse(input);
             input = nf.format(number);
@@ -127,8 +166,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         if (hasDecimal(input)) {
             int decimalIndex = input.indexOf(getDecimalChar());
             return decimalIndex < input.length() - 1
-                    ? input.substring(decimalIndex + 1).length()
-                    : 0;
+                    ? input.substring(decimalIndex + 1).length() : 0;
         }
         return 0;
     }
@@ -142,15 +180,15 @@ public class NumberFormatterTextWatcher implements TextWatcher {
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         hasDecimalSeparator = s.toString().indexOf(getDecimalChar()) > -1;
-        prevLen = s.length();
+        lengthBefore = s.length();
 
         if (start > 0) {
-            if (prevLen == start) {
+            if (lengthBefore == start) {
                 // typing, not first character.
-                prevChar = s.charAt(start - 1);
+                charBefore = s.charAt(start - 1);
             } else {
                 // deleting
-                prevChar = s.charAt(start);
+                charBefore = s.charAt(start);
             }
         }
     }
@@ -158,32 +196,49 @@ public class NumberFormatterTextWatcher implements TextWatcher {
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
         String value = s.toString();
-        boolean isDelete = value.length() < prevLen;
+        boolean isDelete = value.length() < lengthBefore;
 
         if (!isDelete && value.length() == 0) {
             return;
         }
 
-        if (!isDelete) {
+        if (isDelete) {
+            if (start > 0) {
+                if (charBefore == getGroupingChar()) {
+                    // Grouping character deleted. Also delete the number preceding it.
+                    value = removeCharAt(value, start - 1);
+                    // Adjust 'start' pointer since an item has been removed
+                    start--;
+                }
+            }
+        } else {
             char inputChar = value.charAt(start);
             boolean notAllowedHere = (inputChar == getDecimalChar()
-                    && (hasDecimalSeparator || (getGroupingChar() == prevChar)))
+                    && (hasDecimalSeparator || (getGroupingChar() == charBefore)))
                     || inputChar == getGroupingChar();
+
             if (notAllowedHere) {
-                // Prevent repeated decimal separator character.
+                // Remove character not allowed (e.g repeating decimal;
+                // decimal after grouping character, etc).
                 value = removeCharAt(value, start);
                 if (start > 0) {
                     // Adjust 'start' pointer since an item has been removed
                     start--;
                 }
             }
-        } else {
-            if (start > 0) {
-                if (prevChar == getGroupingChar()) {
-                    // Grouping character deleted. Also delete the number preceding it.
-                    value = removeCharAt(value, start - 1);
-                    // Adjust 'start' pointer since an item has been removed
-                    start--;
+
+            /*
+             If there's a maxDecimalChars set, check needs to be put in place to ensure
+             that typing is disallowed after the maxDecimalChars value is reached.
+             */
+            int decimalIndex = value.indexOf(getDecimalChar());
+            if (start > decimalIndex) {
+                if (maxDecimalChars > -1 && getNumCharsAfterDecimal(value) > maxDecimalChars) {
+                    int lastIndex = value.length() - 1;
+                    value = removeCharAt(value, lastIndex);
+                    if (start > 0 && start == lastIndex) {
+                        start--;
+                    }
                 }
             }
         }
@@ -195,18 +250,15 @@ public class NumberFormatterTextWatcher implements TextWatcher {
 
         int diff = filtered.length() - value.length();
 
-        int cursorPos = start + diff;
-        if (!isDelete)
-            cursorPos++;
+        int cursorPos = start + diff + count;
+        // if (!isDelete)
+        //     cursorPos++;
 
         if (cursorPos < 0)
             cursorPos = 0;
 
-        if (hasCurrencyString()) {
-            if (cursorPos < currencyString.length()) {
-                cursorPos = cursorPos + (currencyString.length() - cursorPos);
-            }
-        }
+        if (hasCurrencyString() && cursorPos < currencyString.length())
+            cursorPos = cursorPos + (currencyString.length() - cursorPos);
 
         editText.setSelection(cursorPos);
 
@@ -241,11 +293,21 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         return DecimalFormatSymbols.getInstance(locale).getGroupingSeparator();
     }
 
+    public void setMaxDecimalChars(int maxDecimalChars) {
+        this.maxDecimalChars = maxDecimalChars;
+    }
+
     public void setInputListener(@NonNull InputListener inputListener) {
         this.inputListener = inputListener;
     }
 
     public interface InputListener {
+        /**
+         * Called when the input changes with a valid value
+         *
+         * @param unformattedValue The unformatted number string
+         * @param formattedValue   The formatted number string
+         */
         void onChange(String unformattedValue, String formattedValue);
     }
 }
