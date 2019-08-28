@@ -1,9 +1,7 @@
 package com.example.numberformatlab;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,7 +18,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView outputTextView;
     private EditText inputEditText;
 
-    NumberInputFormatter.Builder formatterBuilder;
     NumberInputFormatter inputFormatter;
 
     String mFormatted = "";
@@ -48,12 +45,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        formatterBuilder = new NumberInputFormatter.Builder();
-        // formatterBuilder.formatInput(false);
-        formatterBuilder.setMaxDecimalChars(2);
-        formatterBuilder.showCurrency(true, getCurrencyString());
+        NumberInputFormatter.Builder builder = new NumberInputFormatter.Builder();
+        // builder.formatInput(false);
+        builder.setMaxDecimalChars(0); // Todo - continue - handle for maxDecimalChars = 0
+        builder.showCurrency(true, getCurrencyString());
 
-        inputFormatter = formatterBuilder.buildFor(inputEditText);
+        inputFormatter = builder.buildFor(inputEditText);
         inputFormatter.setInputListener(new NumberFormatterTextWatcher.InputListener() {
             @Override
             public void onChange(String unformattedValue, String formattedValue) {
@@ -70,17 +67,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showOutput(String input) {
-        // inputEditText.setText("5,900.87");
+        inputEditText.setText("5,900.87e.,.e2,-==`");
 
-        if (TextUtils.isEmpty(input)) {
-            outputTextView.setText("");
-            return;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Unformatted: %s\n", mUnformatted))
-                .append(String.format("Formatted: %s\n", mFormatted));
-
-        outputTextView.setText(sb);
+        // if (TextUtils.isEmpty(input)) {
+        //     outputTextView.setText("");
+        //     return;
+        // }
+        //
+        // StringBuilder sb = new StringBuilder();
+        // sb.append(String.format("Unformatted: %s\n", mUnformatted))
+        //         .append(String.format("Formatted: %s\n", mFormatted));
+        //
+        // outputTextView.setText(sb);
     }
 }

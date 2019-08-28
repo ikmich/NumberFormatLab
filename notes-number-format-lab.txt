@@ -1,0 +1,15 @@
+
+        // mEditText.setInputType(
+        //         InputType.TYPE_CLASS_NUMBER
+        //                 | InputType.TYPE_NUMBER_FLAG_DECIMAL
+        //                 | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        
+        
+        
+            /*
+             * Some Android versions will crash if attempting to parse the numbers with the
+             * grouping character still contained inside, when the grouping character is not
+             * comma or period. e.g for Euro locales that use space or dot for grouping. So,
+             * for the sake of parsing and formatting, we are removing the grouping characters
+             * here. They will be added after formatting.
+             */

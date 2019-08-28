@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.EditText;
 
 import java.text.DecimalFormat;
@@ -48,6 +49,12 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         this.currencyString = currencyString == null ? "" : currencyString.trim();
     }
 
+    /**
+     * Strips out multiple decimal characters if any, leaving the last occurring decimal character.
+     *
+     * @param input The number string
+     * @return The filtered number string.
+     */
     private String resolveDecimals(String input) {
         if (TextUtils.isEmpty(input))
             return input;
@@ -75,7 +82,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
     }
 
     /**
-     * Resolves the input to remove negative sign that is not at the beginning of the number
+     * Removes negative sign character that is not at the beginning of the number string
      *
      * @param input
      * @return
@@ -88,6 +95,13 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         return input.replaceAll(Pattern.quote(currencyString), "");
     }
 
+    /**
+     * Strips out any characters that are not allowed for a number as dictated by the current
+     * Locale.
+     *
+     * @param input The number string to be filtered.
+     * @return The filtered number string with all disallowed characters removed.
+     */
     private String removeDisallowedChars(String input) {
         StringBuilder sb = new StringBuilder();
         for (char c : input.toCharArray()) {
@@ -98,6 +112,13 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         return sb.toString();
     }
 
+    /**
+     * Filters a number string to remove unwanted characters, and formats the output.
+     *
+     * @param input The number string to be filtered.
+     * @return The formatted or unformatted number string, depending on whether
+     * <em>shouldFormatCode</em> is true or false.
+     */
     private String filterInput(String input) {
         if (input == null) {
             input = "";
@@ -111,9 +132,9 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         // Format the characteristic (the part before the decimal character)
         int decimalIndex = input.indexOf(getDecimalChar());
         if (decimalIndex > -1) {
-            String characteristic = input.substring(0, decimalIndex);
+            String left = input.substring(0, decimalIndex);
             String right = input.substring(decimalIndex);
-            String formattedCharacteristic = format(characteristic);
+            String formattedCharacteristic = format(left);
             input = formattedCharacteristic + right;
         }
 
@@ -167,8 +188,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
             input = nf.format(number);
         } catch (ParseException | ClassCastException e) {
             e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("ERROR", e.getMessage(), e);
         }
 
         return input;
@@ -190,7 +210,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
 
         if (start > 0) {
             if (lengthBefore == start) {
-                // typing, not first character.
+                // typing
                 charBefore = s.charAt(start - 1);
             } else {
                 // deleting
@@ -228,7 +248,6 @@ public class NumberFormatterTextWatcher implements TextWatcher {
             if (notAllowedHere) {
                 value = removeCharAt(value, start);
                 if (start > 0) {
-                    // Adjust 'start' pointer since an item has been removed
                     start--;
                 }
             }
@@ -242,8 +261,9 @@ public class NumberFormatterTextWatcher implements TextWatcher {
                 if (isMaxDecimalCharsPropSet() && getNumCharsAfterDecimal(value) > maxDecimalChars) {
                     int lastIndex = value.length() - 1;
                     value = removeCharAt(value, lastIndex);
-                    if (start == lastIndex)
+                    if (start == lastIndex) {
                         start--;
+                    }
                 }
             }
         }
@@ -256,7 +276,6 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         int diff = filtered.length() - value.length();
 
         int cursorPos = start + diff + count;
-
         if (cursorPos < 0)
             cursorPos = 0;
 

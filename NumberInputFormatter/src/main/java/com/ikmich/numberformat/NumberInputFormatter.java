@@ -20,16 +20,21 @@ public class NumberInputFormatter {
     private Builder builder;
     private Locale locale;
 
-    private NumberInputFormatter(EditText editText, @NonNull Locale locale) {
+    private NumberInputFormatter(EditText editText, @NonNull Locale locale, @NonNull Builder builder) {
         this.editText = editText;
         this.locale = locale;
+        this.builder = builder;
+
         textWatcher = new NumberFormatterTextWatcher(this.editText, locale);
+        textWatcher.shouldFormatText(builder.shouldFormatText);
+        textWatcher.setCurrencyString(getCurrencyString());
+        textWatcher.setMaxDecimalChars(builder.maxDecimalChars);
     }
 
     /**
-     * Called to setup the Locale-aware behaviour.
+     * Sets up the Locale-aware number formatting behaviour.
      *
-     * @param clearField Whether to clear the EditText field's contents or not. Pass true
+     * @param clearField Whether to clear the EditText field's contents or not. Pass `true`
      *                   in the event of a configuration change. i.e. when
      *                   savedInstanceState != null
      */
@@ -55,7 +60,6 @@ public class NumberInputFormatter {
                     @Override
                     public void run() {
                         int sel = editText.getSelectionEnd();
-                        // String.format("^%s", getCurrencyString())
                         boolean hasCurrencySymbol = Pattern.compile("^" + Pattern.quote(getCurrencyString()))
                                 .matcher(editText.getText()).find();
                         if (hasCurrencySymbol) {
@@ -89,13 +93,6 @@ public class NumberInputFormatter {
                 editText.addTextChangedListener(textWatcher);
             }
         });
-    }
-
-    private void attachBuilder(@NonNull Builder builder) {
-        this.builder = builder;
-        textWatcher.shouldFormatText(builder.shouldFormatText);
-        textWatcher.setCurrencyString(getCurrencyString());
-        textWatcher.setMaxDecimalChars(builder.maxDecimalChars);
     }
 
     private String getCurrencyString() {
@@ -151,9 +148,7 @@ public class NumberInputFormatter {
         }
 
         public NumberInputFormatter buildFor(EditText editText) {
-            NumberInputFormatter inputFormatter = new NumberInputFormatter(editText, mLocale);
-            inputFormatter.attachBuilder(this);
-            return inputFormatter;
+            return new NumberInputFormatter(editText, mLocale, this);
         }
     }
 }
