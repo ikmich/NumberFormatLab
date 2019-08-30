@@ -18,23 +18,13 @@
         android:textSize="18sp" />
 
     <EditText
-        android:id="@+id/et_input_general"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/dosis_medium"
-        android:gravity="center_horizontal"
-        android:inputType="numberDecimal"
-        android:textSize="32sp"
-        android:visibility="gone" />
-
-    <EditText
         android:id="@+id/et_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fontFamily="@font/dosis_medium"
         android:gravity="center_horizontal"
         android:inputType="numberDecimal"
-        android:textSize="32sp" />
+        android:textSize="@dimen/input_text_size" />
 
     <Button
         android:id="@+id/btn_show_output"
@@ -45,7 +35,17 @@
         android:gravity="center"
         android:text="@string/show_output"
         android:textColor="@android:color/white"
-        android:textSize="18sp" />
+        android:textSize="@dimen/button_text_size" />
+
+    <EditText
+        android:id="@+id/et_input_general"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/dosis_medium"
+        android:gravity="center_horizontal"
+        android:inputType="numberDecimal"
+        android:textSize="@dimen/input_text_size"
+        android:visibility="visible" />
 
     <TextView
         android:id="@+id/tv_output"

@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings("JavaDoc")
 public class NumberFormatterTextWatcher implements TextWatcher {
     private static final String DIGITS = "-0123456789";
+    private static final int NO_DECIMAL_CHARS = 0;
 
     private EditText editText;
     private Locale locale;
@@ -59,6 +60,11 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         if (TextUtils.isEmpty(input))
             return input;
 
+        if (maxDecimalChars == NO_DECIMAL_CHARS) {
+            input = removeDecimalChar(input);
+            return input;
+        }
+
         char[] chars = input.toCharArray();
         int decimalIndex = -1;
 
@@ -74,11 +80,17 @@ public class NumberFormatterTextWatcher implements TextWatcher {
             // Remove any decimals occurring before this index
             String left = input.substring(0, decimalIndex);
             String right = input.substring(decimalIndex);
-            left = left.replaceAll(Pattern.quote(String.valueOf(getDecimalChar())), "");
+            left = removeDecimalChar(left);
             return left + right;
         }
 
         return input;
+    }
+
+    private String removeDecimalChar(String input) {
+        if (TextUtils.isEmpty(input))
+            return "";
+        return input.replaceAll(Pattern.quote(String.valueOf(getDecimalChar())), "");
     }
 
     /**
@@ -116,10 +128,11 @@ public class NumberFormatterTextWatcher implements TextWatcher {
      * Filters a number string to remove unwanted characters, and formats the output.
      *
      * @param input The number string to be filtered.
+     * @param count
      * @return The formatted or unformatted number string, depending on whether
      * <em>shouldFormatCode</em> is true or false.
      */
-    private String filterInput(String input) {
+    private String filterInput(String input, int count) {
         if (input == null) {
             input = "";
         }
@@ -157,7 +170,9 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         boolean b2 = Pattern.compile(String.format("\\%s\\d*0+$", getDecimalChar()))
                 .matcher(input).find();
 
-        if (b1 || b2) {
+        if (count < 2 && (b1 || b2)) {
+            // If count is 1 or less, one character was typed/deleted. With these conditions met, the formatting
+            // should not be done at this point, and the filtered string is returned
             return currencyString + input;
         }
 
@@ -268,7 +283,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
             }
         }
 
-        String filtered = filterInput(value);
+        String filtered = filterInput(value, count);
 
         editText.removeTextChangedListener(this);
         editText.setText(filtered);
