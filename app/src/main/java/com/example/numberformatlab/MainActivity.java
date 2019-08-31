@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
         NumberInputFormatter.Builder builder = new NumberInputFormatter.Builder();
         // builder.formatInput(false);
-        // builder.setMaxDecimalChars(-1);
+        // builder.setMaxDecimaDigits(-1);
         builder.showCurrency(true, getCurrencyString());
 
         inputFormatter = builder.buildFor(inputEditText);

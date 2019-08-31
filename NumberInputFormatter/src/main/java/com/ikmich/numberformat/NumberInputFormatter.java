@@ -28,7 +28,7 @@ public class NumberInputFormatter {
         textWatcher = new NumberFormatterTextWatcher(this.editText, locale);
         textWatcher.shouldFormatText(builder.shouldFormatText);
         textWatcher.setCurrencyString(getCurrencyString());
-        textWatcher.setMaxDecimalChars(builder.maxDecimalChars);
+        textWatcher.setMaxDecimalDigits(builder.maxDecimalDigits);
     }
 
     /**
@@ -117,7 +117,7 @@ public class NumberInputFormatter {
         private boolean shouldShowCurrency = false;
         private String mCurrencyString = "";
         private Locale mLocale;
-        private int maxDecimalChars = -1;
+        private int maxDecimalDigits = -1;
 
         public Builder() {
             this(Locale.getDefault());
@@ -142,8 +142,8 @@ public class NumberInputFormatter {
             return this;
         }
 
-        public Builder setMaxDecimalChars(int maxDecimalChars) {
-            this.maxDecimalChars = maxDecimalChars;
+        public Builder setMaxDecimaDigits(int maxDecimalDigits) {
+            this.maxDecimalDigits = maxDecimalDigits;
             return this;
         }
 

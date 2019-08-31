@@ -28,7 +28,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
     private char charBefore;
     private boolean hasDecimalSeparator;
     private int numFractionDigits;
-    private int maxDecimalChars = -1;
+    private int maxDecimalDigits = -1;
 
     private InputListener inputListener;
 
@@ -60,7 +60,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         if (TextUtils.isEmpty(input))
             return input;
 
-        if (maxDecimalChars == NO_DECIMAL_CHARS) {
+        if (maxDecimalDigits == NO_DECIMAL_CHARS) {
             input = removeDecimalChar(input);
             return input;
         }
@@ -171,8 +171,9 @@ public class NumberFormatterTextWatcher implements TextWatcher {
                 .matcher(input).find();
 
         if (count < 2 && (b1 || b2)) {
-            // If count is 1 or less, one character was typed/deleted. With these conditions met, the formatting
-            // should not be done at this point, and the filtered string is returned
+            // If count is 1 or less, one character was typed/deleted. With either of these
+            // conditions (b1 or b2) met, the formatting should not be done at this point,
+            // and the filtered string is returned
             return currencyString + input;
         }
 
@@ -194,7 +195,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
         try {
             DecimalFormat nf = (DecimalFormat) NumberFormat.getInstance(locale);
             if (isMaxDecimalCharsPropSet()) {
-                nf.setMaximumFractionDigits(maxDecimalChars);
+                nf.setMaximumFractionDigits(maxDecimalDigits);
             } else {
                 nf.setMaximumFractionDigits(numFractionDigits);
             }
@@ -268,12 +269,12 @@ public class NumberFormatterTextWatcher implements TextWatcher {
             }
 
             /*
-             If there's a maxDecimalChars set, check needs to be put in place to ensure
-             that typing is disallowed after the maxDecimalChars value is reached.
+             If there's a maxDecimalDigits set, check needs to be put in place to ensure
+             that typing is disallowed after the maxDecimalDigits value is reached.
              */
             int decimalIndex = value.indexOf(getDecimalChar());
             if (start > decimalIndex) {
-                if (isMaxDecimalCharsPropSet() && getNumCharsAfterDecimal(value) > maxDecimalChars) {
+                if (isMaxDecimalCharsPropSet() && getNumCharsAfterDecimal(value) > maxDecimalDigits) {
                     int lastIndex = value.length() - 1;
                     value = removeCharAt(value, lastIndex);
                     if (start == lastIndex) {
@@ -307,7 +308,7 @@ public class NumberFormatterTextWatcher implements TextWatcher {
     }
 
     private boolean isMaxDecimalCharsPropSet() {
-        return maxDecimalChars > -1;
+        return maxDecimalDigits > -1;
     }
 
     private String removeCharAt(String s, int index) {
@@ -352,10 +353,10 @@ public class NumberFormatterTextWatcher implements TextWatcher {
     /**
      * Used to limit the number of decimal places that should be allowed.
      *
-     * @param maxDecimalChars
+     * @param maxDecimalDigits
      */
-    public void setMaxDecimalChars(int maxDecimalChars) {
-        this.maxDecimalChars = maxDecimalChars;
+    public void setMaxDecimalDigits(int maxDecimalDigits) {
+        this.maxDecimalDigits = maxDecimalDigits;
     }
 
     public void setInputListener(@NonNull InputListener inputListener) {
