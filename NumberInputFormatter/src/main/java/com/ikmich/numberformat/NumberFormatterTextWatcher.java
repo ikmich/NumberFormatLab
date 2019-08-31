@@ -100,6 +100,8 @@ public class NumberFormatterTextWatcher implements TextWatcher {
      * @return
      */
     private String resolveNegativeSign(String input) {
+        if (hasCurrencyString(input))
+            removeCurrencyString(input);
         return input.replaceAll("(?<=.)-+", "");
     }
 
@@ -137,10 +139,10 @@ public class NumberFormatterTextWatcher implements TextWatcher {
             input = "";
         }
 
-        input = removeCurrencyString(input);
-        input = resolveNegativeSign(input);
-        input = removeDisallowedChars(input);
-        input = resolveDecimals(input);
+        input = resolveDecimals(
+                removeDisallowedChars(
+                        resolveNegativeSign(
+                                removeCurrencyString(input))));
 
         // Format the characteristic (the part before the decimal character)
         int decimalIndex = input.indexOf(getDecimalChar());
@@ -321,6 +323,10 @@ public class NumberFormatterTextWatcher implements TextWatcher {
 
     private boolean hasCurrencyString() {
         return !TextUtils.isEmpty(currencyString);
+    }
+
+    private boolean hasCurrencyString(String input) {
+        return Pattern.compile(Pattern.quote(currencyString)).matcher(input).find();
     }
 
     /**
